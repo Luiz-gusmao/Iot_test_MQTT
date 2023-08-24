@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Monitor de Temperatura e Umidade</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.0/socket.io.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .data-container {
+      display: flex;
+      justify-content: space-around;
+    }
+    .data-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 200px;
+    }
+    .icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="number"] {
+      width: 60px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Monitor de Temperatura e Umidade</h1>
+  <div class="data-container">
+    <div class="data-box">
+      <div class="icon">&#127777;</div>
+      <p><strong>Temperatura:</strong></p>
+      <p><span id="temperatura">-</span> °C</p>
+    </div>
+    <div class="data-box">
+      <div class="icon">&#128167;</div>
+      <p><strong>Umidade:</strong></p>
+      <p><span id="umidade">-</span>%</p>
+    </div>
+  </div>
+
+  <h2>Configurações</h2>
+  <label for="intervalo">Intervalo (ms):</label>
+  <input type="number" id="intervalo">
+  <button onclick="enviarIntervalo()">Enviar</button>
+
+  <h2>Estado da Conexão</h2>
+  <p id="estado-conexao">Conectando...</p>
+
+  <script>
+    const socket = io.connect(); // Conectar ao servidor WebSocket
+
+    socket.on('connect', function () {
+      document.getElementById('estado-conexao').textContent = 'Conectado';
+    });
+
+    socket.on('disconnect', function () {
+      document.getElementById('estado-conexao').textContent = 'Desconectado';
+    });
+
+    socket.on('connect_error', function (error) {
+      document.getElementById('estado-conexao').textContent = 'Erro de conexão';
+      console.error('Erro de conexão WebSocket:', error);
+    });
+
+    socket.on('sensor/temperatura', function (data) {
+      document.getElementById('temperatura').textContent = data + ' °C';
+    });
+
+    socket.on('sensor/umidade', function (data) {
+      document.getElementById('umidade').textContent = data + '%';
+    });
+
+    function enviarIntervalo() {
+      const intervalo = document.getElementById('intervalo').value;
+      socket.emit('intervalo', intervalo);
+    }
+  </script>
+</body>
+</html>
